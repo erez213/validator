@@ -46,19 +46,19 @@ func (t TextErr) MarshalText() ([]byte, error) {
 var (
 	// ErrZeroValue is the error returned when variable has zero value
 	// and nonzero or nonnil was specified
-	ErrZeroValue = TextErr{errors.New("zero value")}
+	ErrZeroValue = TextErr{errors.New("לא יכול להיות ריק")}
 	// ErrMin is the error returned when variable is less than mininum
 	// value specified
-	ErrMin = TextErr{errors.New("less than min")}
+	ErrMin = TextErr{errors.New("קטן/קצר מדי")}
 	// ErrMax is the error returned when variable is more than
 	// maximum specified
-	ErrMax = TextErr{errors.New("greater than max")}
+	ErrMax = TextErr{errors.New("גדול/ארוך מדי")}
 	// ErrLen is the error returned when length is not equal to
 	// param specified
-	ErrLen = TextErr{errors.New("invalid length")}
+	ErrLen = TextErr{errors.New("אורך לא תקין")}
 	// ErrRegexp is the error returned when the value does not
 	// match the provided regular expression parameter
-	ErrRegexp = TextErr{errors.New("regular expression mismatch")}
+	ErrRegexp = TextErr{errors.New("ערך לא תקין")}
 	// ErrUnsupported is the error error returned when a validation rule
 	// is used with an unsupported variable type
 	ErrUnsupported = TextErr{errors.New("unsupported type")}
@@ -70,7 +70,7 @@ var (
 	ErrUnknownTag = TextErr{errors.New("unknown tag")}
 	// ErrInvalid is the error returned when variable is invalid
 	// (normally a nil pointer)
-	ErrInvalid = TextErr{errors.New("invalid value")}
+	ErrInvalid = TextErr{errors.New("ערך לא תקין")}
 	// ErrCannotValidate is the error returned when a struct is unexported
 	ErrCannotValidate = TextErr{errors.New("cannot validate unexported struct")}
 )
@@ -85,11 +85,12 @@ func (err ErrorMap) Error() string {
 
 	for k, errs := range err {
 		if len(errs) > 0 {
-			b.WriteString(fmt.Sprintf("%s: %s, ", k, errs.Error()))
+			b.WriteString(fmt.Sprintf("%s: %s", k, errs.Error()))
+			b.WriteByte('\n')
 		}
 	}
 
-	return strings.TrimSuffix(b.String(), ", ")
+	return strings.TrimSpace(b.String())
 }
 
 // ErrorArray is a slice of errors returned by the Validate function.
@@ -314,6 +315,11 @@ func (mv *Validator) validateField(fieldDef reflect.StructField, fieldVal reflec
 	if len(errs) > 0 {
 		n := fieldDef.Name
 
+		//Get custom tags names for error
+		if fn := fieldDef.Tag.Get("name"); fn != "" {
+			n = fn
+		}
+		
 		if mv.printJSON {
 			if jn := parseName(fieldDef.Tag.Get("json")); jn != "" {
 				n = jn
@@ -338,7 +344,7 @@ func (mv *Validator) deepValidateCollection(f reflect.Value, m ErrorMap, fnameFn
 			m[fnameFn()] = ErrorArray{err}
 		}
 		for j, k := range subm {
-			m[fnameFn()+"."+j] = k
+			m[j] = k
 		}
 	case reflect.Array, reflect.Slice:
 		// we don't need to loop over every byte in a byte slice so we only end up
