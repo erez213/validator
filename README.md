@@ -25,10 +25,10 @@ A simple example would be.
 
 ```go
 type NewUserRequest struct {
-	Username string `validate:"min=3,max=40,regexp=^[a-zA-Z]*$"`
-	Name string     `validate:"nonzero"`
-	Age int         `validate:"min=21"`
-	Password string `validate:"min=8"`
+	Username string `validate:"min=3,max=40,regexp=^[a-zA-Z]*$" name:"שם משתמש"`
+	Name string     `validate:"nonzero" name:"שם"`
+	Age int         `validate:"min=21" name:"גיל"`
+	Password string `validate:"min=8" name:"סיסמא"`
 }
 
 nur := NewUserRequest{Username: "something", Age: 20}
